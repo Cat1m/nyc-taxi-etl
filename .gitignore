@@ -26,3 +26,5 @@ airflow-webserver.pid
 
 # Secrets / local env
 .env
+# ngoại lệ: orchestration/.env chỉ chứa AIRFLOW_UID, không phải secret thật
+!orchestration/.env

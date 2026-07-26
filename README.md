@@ -57,8 +57,8 @@ nyc-taxi-etl/
 ## Trạng thái hiện tại
 
 - [x] Step 0 — Scaffold & môi trường
-- [ ] Step 1 — Ingestion (tải dữ liệu)
-- [ ] Step 2 — Bronze load + Idempotency
-- [ ] Step 3 — dbt: Silver + Gold (star schema)
-- [ ] Step 4 — Airflow orchestration
+- [x] Step 1 — Ingestion (tải dữ liệu)
+- [x] Step 2 — Bronze load + Idempotency
+- [x] Step 3 — dbt: Silver + Gold (star schema)
+- [x] Step 4 — Airflow orchestration
 - [ ] Step 5 — Đánh bóng portfolio
