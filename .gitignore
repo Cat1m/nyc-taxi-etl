@@ -28,3 +28,4 @@ airflow-webserver.pid
 .env
 # ngoại lệ: orchestration/.env chỉ chứa AIRFLOW_UID, không phải secret thật
 !orchestration/.env
+.claude/plan/next-steps.md
