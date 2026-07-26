@@ -1,0 +1,19 @@
+# profiles.yml nằm trong project (thay vì ~/.dbt/profiles.yml mặc định) để repo
+# tự chứa toàn bộ config cần thiết — chạy `dbt` với --profiles-dir transform
+# (hoặc biến môi trường DBT_PROFILES_DIR) là đủ, không cần setup gì thêm ngoài
+# thư mục repo.
+#
+# QUAN TRỌNG: "path" bên dưới được dbt-duckdb resolve theo thư mục đang đứng
+# (cwd) khi gọi lệnh `dbt`, KHÔNG phải theo vị trí file profiles.yml này. Convention
+# của project: luôn chạy dbt từ project root (nyc-taxi-etl/), vd:
+#   dbt run --project-dir transform --profiles-dir transform
+# Từng dùng "../warehouse.duckdb" (tưởng nhầm là resolve theo transform/) và nó
+# đã tạo ra 1 file warehouse.duckdb MỚI ở thư mục cha (ngoài project) -- đường
+# dẫn dưới đây là tương đối theo project root, không có "../".
+nyc_taxi_etl:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "warehouse.duckdb"
+      threads: 4

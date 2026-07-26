@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Bảng bronze do ingestion/load_bronze.py nạp trực tiếp (ngoài dbt), giữ
+      nguyên gốc từ Parquet/CSV. dbt không transform gì ở layer này — chỉ đọc.
+    schema: main
+    tables:
+      - name: yellow_trips
+        identifier: bronze_yellow_trips
+        description: Raw Yellow Taxi trip records, 1 dòng = 1 trip, đã gộp nhiều tháng (cột year_month phân biệt).
+      - name: taxi_zone_lookup
+        identifier: bronze_taxi_zone_lookup
+        description: Bảng tra cứu zone (LocationID -> Borough/Zone/service_zone), dùng cho dim_location.

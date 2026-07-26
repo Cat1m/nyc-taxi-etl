@@ -17,6 +17,7 @@ data/staging/*
 target/
 dbt_packages/
 logs/
+.user.yml
 
 # Airflow
 airflow.db

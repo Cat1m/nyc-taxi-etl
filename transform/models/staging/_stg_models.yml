@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_trips
+    description: >
+      Trip data đã ép kiểu, đổi tên cột chuẩn, lọc dòng vật lý-vô lý (xem
+      comment đầu file stg_trips.sql để biết lý do KHÔNG lọc các trường hợp
+      còn lại). 1 dòng = 1 trip hợp lệ.
+    columns:
+      - name: pickup_datetime
+        description: Thời điểm bắt đầu chuyến đi.
+        tests:
+          - not_null
+      - name: dropoff_datetime
+        description: Thời điểm kết thúc chuyến đi.
+        tests:
+          - not_null
+      - name: trip_duration_minutes
+        description: Thời lượng chuyến đi (phút), luôn dương do đã lọc ở tầng silver.
+      - name: pickup_location_id
+        tests:
+          - not_null
+      - name: dropoff_location_id
+        tests:
+          - not_null
+      - name: fare_amount
+        description: Tiền cước cơ bản, luôn > 0 do đã lọc ở tầng silver.
+        tests:
+          - not_null
