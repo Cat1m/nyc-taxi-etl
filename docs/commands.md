@@ -29,6 +29,24 @@ python ingestion/download_tlc.py --year-month 2023-01
 python ingestion/load_bronze.py --year-month 2023-01
 ```
 
+## Great Expectations (Step 6)
+
+```bash
+# validate bronze 1 tháng — chạy sau load_bronze, trước dbt run
+python quality/validate_bronze.py --year-month 2023-01
+```
+
+Exit code khác 0 nếu có expectation fail (Airflow dựa vào đây để chặn `dbt_run`
+chạy tiếp). Xem báo cáo trực quan (cộng dồn lịch sử theo tháng, không ghi đè):
+
+```bash
+# mở bằng trình duyệt (Windows)
+start quality/gx/uncommitted/data_docs/local_site/index.html
+```
+
+`quality/gx/expectations/`, `quality/gx/checkpoints/` là cấu hình (commit vào
+git); `quality/gx/uncommitted/` là output sinh ra (gitignored).
+
 ## dbt (Step 3)
 
 ```bash

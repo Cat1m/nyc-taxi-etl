@@ -20,6 +20,7 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins
     - ../ingestion:/opt/airflow/ingestion
     - ../transform:/opt/airflow/transform
+    - ../quality:/opt/airflow/quality
     - ../data:/opt/airflow/data
     - ../warehouse.duckdb:/opt/airflow/warehouse.duckdb
   user: "${AIRFLOW_UID:-50000}:0"

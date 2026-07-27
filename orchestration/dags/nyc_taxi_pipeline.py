@@ -1,4 +1,5 @@
-"""DAG orchestrate toàn bộ pipeline NYC Taxi: download -> load_bronze -> dbt_run -> dbt_test.
+"""DAG orchestrate toàn bộ pipeline NYC Taxi:
+download -> load_bronze -> validate_bronze -> dbt_run -> dbt_test.
 
 year_month của mỗi lần chạy lấy từ chính lịch chạy của DAG (data_interval_start),
 không truyền tay -- nhờ vậy backfill nhiều tháng chỉ cần dùng lệnh
@@ -28,7 +29,7 @@ default_args = {
 
 with DAG(
     dag_id="nyc_taxi_pipeline",
-    description="Download -> Bronze load -> dbt run -> dbt test, 1 lần/tháng",
+    description="Download -> Bronze load -> GX validate -> dbt run -> dbt test, 1 lần/tháng",
     default_args=default_args,
     schedule="@monthly",
     start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
@@ -50,6 +51,11 @@ with DAG(
         bash_command=f"python /opt/airflow/ingestion/load_bronze.py --year-month {year_month}",
     )
 
+    validate_bronze = BashOperator(
+        task_id="validate_bronze",
+        bash_command=f"python /opt/airflow/quality/validate_bronze.py --year-month {year_month}",
+    )
+
     dbt_run = BashOperator(
         task_id="dbt_run",
         bash_command="cd /opt/airflow && dbt run --project-dir transform --profiles-dir transform",
@@ -60,4 +66,4 @@ with DAG(
         bash_command="cd /opt/airflow && dbt test --project-dir transform --profiles-dir transform",
     )
 
-    download >> load_bronze >> dbt_run >> dbt_test
+    download >> load_bronze >> validate_bronze >> dbt_run >> dbt_test

@@ -20,7 +20,8 @@ nhân đôi hay làm sai dữ liệu.
 ```mermaid
 flowchart TD
     A["NYC TLC<br/>(Parquet files)"] -->|"download_tlc.py"| B["Bronze layer<br/>raw, giữ nguyên gốc"]
-    B -->|"dbt staging<br/>(stg_trips)"| C["Silver layer<br/>ép kiểu, lọc dòng rác"]
+    B -->|"quality/validate_bronze.py<br/>(Great Expectations)"| GX["GX validate<br/>phân bố + boundary"]
+    GX -->|"dbt staging<br/>(stg_trips)"| C["Silver layer<br/>ép kiểu, lọc dòng rác"]
     C -->|"dbt marts"| D["Gold layer<br/>star schema"]
     D --> E1["fact_trips"]
     D --> E2["dim_datetime"]
@@ -29,10 +30,11 @@ flowchart TD
     D --> E5["dim_payment"]
 
     subgraph Orchestration["Airflow (LocalExecutor, Docker)"]
-        F["download >> load_bronze >> dbt_run >> dbt_test"]
+        F["download >> load_bronze >> validate_bronze >> dbt_run >> dbt_test"]
     end
     F -.điều phối toàn bộ chain.-> A
     F -.-> B
+    F -.-> GX
     F -.-> C
     F -.-> D
 ```
@@ -48,6 +50,7 @@ chi tiết lineage graph thật của dbt: `dbt docs generate && dbt docs serve`
 |---|---|---|
 | Ngôn ngữ | Python 3.10+ | ingestion script |
 | Compute + warehouse | DuckDB | vừa chạy query vừa lưu trữ, single-writer |
+| Data quality | Great Expectations | kiểm tra phân bố dữ liệu trên Bronze, trước Silver |
 | Transform/modeling/test | dbt (dbt-duckdb) | Silver + Gold, tests, docs/lineage |
 | Orchestration | Airflow (LocalExecutor, Docker) | lịch chạy, retry, backfill |
 | Version control | Git/GitHub | |
@@ -64,6 +67,10 @@ nyc-taxi-etl/
 ├── ingestion/
 │   ├── download_tlc.py     # tải NYC TLC + zone lookup, data profiling bằng DuckDB
 │   └── load_bronze.py      # nạp bronze, idempotent (delete-by-partition + insert)
+├── quality/                 # Great Expectations, chạy sau Bronze trước Silver
+│   ├── validate_bronze.py  # đọc bronze read-only, validate phân bố + boundary
+│   └── gx/                  # persistent GX Data Context (expectations/checkpoints
+│                             # commit, gx/uncommitted/ gitignored)
 ├── transform/               # dbt project (dbt-duckdb)
 │   ├── models/staging/     # stg_trips (Silver)
 │   ├── models/marts/       # fact_trips, dim_* (Gold, star schema)
@@ -158,9 +165,8 @@ không có hiệu ứng "giá cuối tuần" rõ rệt như 1 số thành phố 
 - **PySpark** cho xử lý cả năm dữ liệu (DuckDB đủ cho vài tháng, nhưng
   scale kém hơn khi dữ liệu vượt quá RAM 1 máy).
 - **BigQuery** làm warehouse production-grade thay vì file DuckDB local.
-- **Dashboard** (Metabase/Superset) thay vì query tay qua CLI.
-- **Great Expectations** cho data quality test phong phú hơn dbt test
-  built-in (distribution test, anomaly detection).
+- **Dashboard** (Metabase/Superset) thay vì query tay qua CLI — có thể tận
+  dụng luôn kết quả Great Expectations để vẽ xu hướng phân bố qua các tháng.
 - Xử lý sạch hơn nhóm `payment_type = 0` (hiện đang giữ lại, map "Unknown"
   thay vì xóa — xem lý do trong `stg_trips.sql`).
 
@@ -172,3 +178,4 @@ không có hiệu ứng "giá cuối tuần" rõ rệt như 1 số thành phố 
 - [x] Step 3 — dbt: Silver + Gold (star schema)
 - [x] Step 4 — Airflow orchestration
 - [x] Step 5 — Đánh bóng portfolio
+- [x] Step 6 — Great Expectations (data quality trên Bronze)

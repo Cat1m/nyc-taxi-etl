@@ -1,0 +1,73 @@
+{
+  "expectations": [
+    {
+      "id": "27c72f2d-dea6-4277-8d90-f031ae54cef9",
+      "kwargs": {
+        "column": "fare_amount",
+        "max_value": 22.0,
+        "min_value": 15.0
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_mean_to_be_between"
+    },
+    {
+      "id": "6ea78354-d6e7-458b-a516-191ce46e5a0f",
+      "kwargs": {
+        "column": "fare_amount",
+        "max_value": 16.0,
+        "min_value": 10.0
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_median_to_be_between"
+    },
+    {
+      "id": "a458d8da-51fe-48c5-ae41-01bfd1bf0138",
+      "kwargs": {
+        "column": "trip_distance",
+        "quantile_ranges": {
+          "quantiles": [
+            0.5
+          ],
+          "value_ranges": [
+            [
+              1.0,
+              3.0
+            ]
+          ]
+        }
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_quantile_values_to_be_between"
+    },
+    {
+      "id": "b6801dcc-724d-4bd2-a68d-b3a86ed9687a",
+      "kwargs": {
+        "column": "trip_distance",
+        "max_value": 100.0,
+        "min_value": 0.0,
+        "mostly": 0.95
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    },
+    {
+      "id": "ca6c956c-c600-42cc-a3c7-dfe7ebea4320",
+      "kwargs": {
+        "column": "fare_amount"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    }
+  ],
+  "id": "5cc9c7d3-fc89-4b71-bccf-ba51e6bf545b",
+  "meta": {
+    "great_expectations_version": "1.19.1"
+  },
+  "name": "bronze_yellow_trips",
+  "notes": null
+}

@@ -29,3 +29,7 @@ airflow-webserver.pid
 # ngoại lệ: orchestration/.env chỉ chứa AIRFLOW_UID, không phải secret thật
 !orchestration/.env
 .claude/plan/next-steps.md
+
+# Great Expectations: chỉ ignore output sinh ra, giữ lại expectations/checkpoints
+# (source, tương tự schema.yml của dbt) -- đúng quy ước GX tự sinh khi scaffold
+quality/gx/uncommitted/

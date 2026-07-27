@@ -1,0 +1,22 @@
+{
+  "data": {
+    "asset": {
+      "id": "26f93621-ec97-4c5f-a48a-717e4ba4fc19",
+      "name": "bronze_yellow_trips_asset"
+    },
+    "batch_definition": {
+      "id": "e4953e57-04dc-4e0c-850a-bf8c16edde62",
+      "name": "whole_month"
+    },
+    "datasource": {
+      "id": "9f37819b-cc0f-4ce4-b202-60db718d6804",
+      "name": "bronze_source"
+    }
+  },
+  "id": "965ca290-db7d-473e-b6dd-5476b7ab0d6a",
+  "name": "bronze_yellow_trips_validation",
+  "suite": {
+    "id": "5cc9c7d3-fc89-4b71-bccf-ba51e6bf545b",
+    "name": "bronze_yellow_trips"
+  }
+}
