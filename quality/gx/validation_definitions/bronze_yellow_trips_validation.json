@@ -1,11 +1,11 @@
 {
   "data": {
     "asset": {
-      "id": "e011e5da-6eb6-4bcd-b4b1-dd6bbf49cba0",
+      "id": "819fddd5-07a9-4c4c-be75-67a04067d8e4",
       "name": "bronze_yellow_trips_asset"
     },
     "batch_definition": {
-      "id": "762757a8-1571-49e7-89fe-3682cfe35a9f",
+      "id": "927d074f-590f-41a7-8495-669851a94cea",
       "name": "whole_month"
     },
     "datasource": {

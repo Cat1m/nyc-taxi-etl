@@ -87,11 +87,11 @@ fluent_datasources:
     assets:
       bronze_yellow_trips_asset:
         type: dataframe
-        id: e011e5da-6eb6-4bcd-b4b1-dd6bbf49cba0
+        id: 819fddd5-07a9-4c4c-be75-67a04067d8e4
         batch_metadata: {}
         batch_definitions:
           whole_month:
-            id: 762757a8-1571-49e7-89fe-3682cfe35a9f
+            id: 927d074f-590f-41a7-8495-669851a94cea
             partitioner:
 analytics_enabled:
 data_context_id: fb07b365-2cf4-41d7-a104-d12aff3ee9e0
