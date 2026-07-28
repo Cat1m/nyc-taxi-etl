@@ -3,6 +3,35 @@
 Tất cả lệnh dưới đây chạy từ **project root** (`nyc-taxi-etl/`), trừ khi ghi chú
 khác. Trên Windows, dùng `venv\Scripts\...` (không phải `venv/bin/...`).
 
+## Bắt đầu lại phiên làm việc (mở máy lại / hôm sau)
+
+1. Mở Docker Desktop, đợi chạy xong hẳn.
+2. **Kiểm tra container nào đang tự chạy ngầm** — cả 2 docker-compose
+   (`orchestration/`, `dashboard/`) đều đặt `restart: always`, nghĩa là nếu
+   chúng đang chạy lúc tắt máy, Docker Desktop sẽ **tự bật lại** khi mở lại,
+   kể cả khi không chủ động `docker compose up`:
+   ```bash
+   docker ps
+   ```
+   Biết trước `metabase`/`airflow-*` có đang chạy ngầm không, tránh bị lock
+   `warehouse.duckdb` mà không hiểu vì sao (xem mục DuckDB single-writer).
+3. Chọn 1 trong 2 việc — **không làm đồng thời**:
+   - **Muốn chạy/ghi dữ liệu** (ingest tháng mới, `dbt run`, GX, Airflow):
+     đảm bảo Metabase đang tắt trước (nếu đang chạy):
+     ```bash
+     cd dashboard && docker compose down
+     ```
+     rồi làm theo các mục Ingestion/dbt/Airflow bên dưới.
+   - **Chỉ muốn xem Dashboard**:
+     ```bash
+     cd dashboard && docker compose up -d   # không cần build lại
+     ```
+     mở `http://localhost:3000`.
+4. DAG Airflow (`nyc_taxi_pipeline`) hiện đang **paused** (tắt sau sự cố
+   backfill vượt tháng khi test GX) — bật `airflow-webserver`/
+   `airflow-scheduler` lên là an toàn, DAG sẽ không tự chạy gì cho tới khi
+   chủ động unpause qua UI hoặc `airflow dags unpause nyc_taxi_pipeline`.
+
 ## Môi trường
 
 ```bash

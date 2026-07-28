@@ -49,6 +49,8 @@ vết lại (traceability) và tái chạy transform mà không cần tải lạ
 chi tiết lineage graph thật của dbt: `dbt docs generate && dbt docs serve`
 (xem [Cách chạy](#cách-chạy) bên dưới).
 
+![dbt lineage graph](project_image/dbt_lineage_graph.jpg)
+
 ## Tech stack
 
 | Thành phần | Công cụ | Vai trò |
@@ -89,6 +91,7 @@ nyc-taxi-etl/
 ├── docs/
 │   ├── data_profiling_2023-01.md   # căn cứ cho luật lọc ở Silver
 │   └── commands.md                 # cheatsheet toàn bộ lệnh hay dùng
+├── project_image/           # screenshot cho README (Airflow, Metabase...)
 ├── requirements.txt
 └── .gitignore
 ```
@@ -147,6 +150,16 @@ Mở **http://localhost:3000**, add database DuckDB trỏ tới
 Metabase giữ connection sống liên tục nên sẽ chiếm lock ghi của DuckDB, xem
 chi tiết trong `docs/commands.md`.
 
+## Screenshots
+
+**Airflow — DAG `nyc_taxi_pipeline` chạy `@monthly`:**
+
+![Airflow DAGs](project_image/airflow.jpg)
+
+**Metabase — Dashboard "NYC Taxi — Overview":**
+
+![Metabase Dashboard](project_image/metabase_chart.jpg)
+
 ## Demo: 3 tháng dữ liệu (2023-01 → 2023-04) nói gì
 
 Query trực tiếp trên `warehouse.duckdb` (star schema `fact_trips` JOIN `dim_*`):
@@ -189,8 +202,9 @@ không có hiệu ứng "giá cuối tuần" rõ rệt như 1 số thành phố 
   scale kém hơn khi dữ liệu vượt quá RAM 1 máy).
 - **BigQuery** làm warehouse production-grade thay vì file DuckDB local.
 - Thêm bảng xu hướng kết quả Great Expectations (mean/median fare, trip
-  distance qua từng tháng) vào Dashboard — hiện Metabase mới có 4 chart demo
-  từ Gold layer, chưa có chart theo dõi chất lượng dữ liệu.
+  distance qua từng tháng) vào Dashboard — Metabase hiện có 5 chart từ Gold
+  layer (kể cả 1 chart xu hướng theo tháng cho trip_count/avg_fare), nhưng
+  chưa có chart riêng theo dõi chất lượng dữ liệu (kết quả GX qua các tháng).
 - Xử lý sạch hơn nhóm `payment_type = 0` (hiện đang giữ lại, map "Unknown"
   thay vì xóa — xem lý do trong `stg_trips.sql`).
 
