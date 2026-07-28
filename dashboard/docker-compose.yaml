@@ -1,0 +1,29 @@
+# Metabase chạy độc lập với Airflow (orchestration/) -- bật/tắt riêng, không
+# ảnh hưởng lịch DAG. Dùng H2 embedded mặc định của Metabase cho metadata riêng
+# (dashboard, user...), không thêm Postgres riêng cho Metabase -- đúng tinh
+# thần "rẻ, không hạ tầng mới" xuyên suốt project.
+services:
+  metabase:
+    build:
+      context: ..
+      dockerfile: dashboard/Dockerfile
+    ports:
+      - "3000:3000"
+    # Docker tạo named volume mới với chủ sở hữu root, nhưng image chạy user
+    # non-root "metabase" (xem Dockerfile) -- không ghi được vào
+    # metabase-data. Ép chạy root ở service này (chỉ ảnh hưởng container này,
+    # không phải host) để tránh phải tự viết entrypoint chown riêng.
+    user: root
+    environment:
+      MB_DB_FILE: /home/metabase/metabase-data/metabase.db
+    volumes:
+      - metabase-data:/home/metabase/metabase-data
+      # warehouse.duckdb mount read-only (:ro) ở mức Docker -- Metabase không
+      # bao giờ được ghi vào file này (DuckDB single-writer, xem CLAUDE.md).
+      # Khi khai báo Database trong Metabase UI, bật thêm tùy chọn read_only
+      # của driver (2 lớp phòng hờ).
+      - ../warehouse.duckdb:/home/metabase/data/warehouse.duckdb:ro
+    restart: always
+
+volumes:
+  metabase-data:

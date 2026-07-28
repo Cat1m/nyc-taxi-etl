@@ -132,12 +132,45 @@ docker compose exec airflow-scheduler airflow tasks states-for-dag-run nyc_taxi_
 docker compose exec airflow-scheduler airflow dags trigger nyc_taxi_pipeline -e 2023-03-01T00:00:00+00:00
 ```
 
+## Dashboard (Metabase, Step 7)
+
+```bash
+# chạy từ dashboard/
+cd dashboard
+docker compose build
+docker compose up -d
+```
+
+Web UI: **http://localhost:3000**. Setup lần đầu: tạo admin account, "Add a
+database" → DuckDB → file path `/home/metabase/data/warehouse.duckdb`,
+Advanced options bật **"Establish a read-only connection"**.
+
+Driver DuckDB cho Metabase là driver cộng đồng
+([motherduckdb/metabase_duckdb_driver](https://github.com/motherduckdb/metabase_duckdb_driver)),
+không phải chính thức — vì vậy `dashboard/Dockerfile` build riêng từ base
+Debian (`eclipse-temurin`) thay vì image `metabase/metabase` (Alpine, không
+tương thích glibc với driver này).
+
+**Quan trọng — khác với Airflow:** Metabase giữ connection tới
+`warehouse.duckdb` **sống liên tục** (không mở-đóng nhanh như các script
+ingestion/dbt/GX). Đã verify thực tế: hễ Metabase đang chạy, `dbt run`/`dbt
+test`/`load_bronze.py` chạy từ host sẽ lỗi ngay
+`IO Error: ... being used by another process` — không phải hiếm khi, mà là
+**luôn luôn** nếu Metabase đang mở. Trước khi chạy pipeline ghi dữ liệu
+(local hoặc Airflow), tắt Metabase trước:
+
+```bash
+cd dashboard && docker compose down
+# ... chạy dbt/Airflow xong ...
+cd dashboard && docker compose up -d
+```
+
 ## Lưu ý quan trọng
 
 - **DuckDB single-writer:** chỉ 1 tiến trình được mở/ghi `warehouse.duckdb`
   cùng lúc. Nếu gặp lỗi "file is being used by another process", tìm và đóng
-  session `duckdb`/`dbt` khác đang mở file này trước (hoặc mở `-readonly`
-  nếu chỉ cần đọc).
+  session `duckdb`/`dbt`/**Metabase** khác đang mở file này trước (hoặc mở
+  `-readonly` nếu chỉ cần đọc).
 - `profiles.yml` resolve đường dẫn `warehouse.duckdb` theo **thư mục đang
   đứng (cwd)** khi gọi lệnh — luôn chạy dbt/duckdb từ project root, không
   phải từ trong `transform/`.

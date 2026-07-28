@@ -28,6 +28,7 @@ flowchart TD
     D --> E3["dim_location"]
     D --> E4["dim_vendor"]
     D --> E5["dim_payment"]
+    E1 --> M["Metabase<br/>(BI dashboard)"]
 
     subgraph Orchestration["Airflow (LocalExecutor, Docker)"]
         F["download >> load_bronze >> validate_bronze >> dbt_run >> dbt_test"]
@@ -38,6 +39,10 @@ flowchart TD
     F -.-> C
     F -.-> D
 ```
+
+Metabase (`dashboard/`) là stack Docker độc lập, không nằm trong DAG Airflow —
+chỉ đọc read-only từ Gold layer để trình bày, không phải 1 bước trong pipeline
+xử lý dữ liệu.
 
 Mỗi layer là 1 bảng/model DuckDB riêng, không ghi đè lên nhau — cho phép truy
 vết lại (traceability) và tái chạy transform mà không cần tải lại data. Xem
@@ -53,9 +58,10 @@ chi tiết lineage graph thật của dbt: `dbt docs generate && dbt docs serve`
 | Data quality | Great Expectations | kiểm tra phân bố dữ liệu trên Bronze, trước Silver |
 | Transform/modeling/test | dbt (dbt-duckdb) | Silver + Gold, tests, docs/lineage |
 | Orchestration | Airflow (LocalExecutor, Docker) | lịch chạy, retry, backfill |
+| Dashboard | Metabase (Docker) | trình bày Gold layer, đọc read-only |
 | Version control | Git/GitHub | |
 
-Chưa dùng Spark/BigQuery/dashboard ở giai đoạn này — xem [Future work](#future-work).
+Chưa dùng Spark/BigQuery ở giai đoạn này — xem [Future work](#future-work).
 
 ## Cấu trúc thư mục
 
@@ -77,6 +83,9 @@ nyc-taxi-etl/
 │   └── seeds/              # vendor/payment lookup tĩnh
 ├── orchestration/           # Airflow qua docker-compose (LocalExecutor)
 │   └── dags/nyc_taxi_pipeline.py
+├── dashboard/                # Metabase qua docker-compose, độc lập với Airflow
+│   ├── Dockerfile           # base Debian + driver DuckDB cộng đồng
+│   └── docker-compose.yaml
 ├── docs/
 │   ├── data_profiling_2023-01.md   # căn cứ cho luật lọc ở Silver
 │   └── commands.md                 # cheatsheet toàn bộ lệnh hay dùng
@@ -124,6 +133,20 @@ chạy `@monthly`, tự backfill theo `start_date`. Chi tiết lệnh đầy đ�
 cách kiểm tra Postgres metadata DB, cách xử lý DuckDB single-writer lock...)
 xem `docs/commands.md`.
 
+### 4. Dashboard (Metabase, độc lập với Airflow)
+
+```bash
+cd dashboard
+docker compose build
+docker compose up -d
+```
+
+Mở **http://localhost:3000**, add database DuckDB trỏ tới
+`/home/metabase/data/warehouse.duckdb` (bật `read_only`). Lưu ý: tắt Metabase
+(`docker compose down`) trước khi chạy `dbt run`/`load_bronze.py`/Airflow —
+Metabase giữ connection sống liên tục nên sẽ chiếm lock ghi của DuckDB, xem
+chi tiết trong `docs/commands.md`.
+
 ## Demo: 3 tháng dữ liệu (2023-01 → 2023-04) nói gì
 
 Query trực tiếp trên `warehouse.duckdb` (star schema `fact_trips` JOIN `dim_*`):
@@ -165,8 +188,9 @@ không có hiệu ứng "giá cuối tuần" rõ rệt như 1 số thành phố 
 - **PySpark** cho xử lý cả năm dữ liệu (DuckDB đủ cho vài tháng, nhưng
   scale kém hơn khi dữ liệu vượt quá RAM 1 máy).
 - **BigQuery** làm warehouse production-grade thay vì file DuckDB local.
-- **Dashboard** (Metabase/Superset) thay vì query tay qua CLI — có thể tận
-  dụng luôn kết quả Great Expectations để vẽ xu hướng phân bố qua các tháng.
+- Thêm bảng xu hướng kết quả Great Expectations (mean/median fare, trip
+  distance qua từng tháng) vào Dashboard — hiện Metabase mới có 4 chart demo
+  từ Gold layer, chưa có chart theo dõi chất lượng dữ liệu.
 - Xử lý sạch hơn nhóm `payment_type = 0` (hiện đang giữ lại, map "Unknown"
   thay vì xóa — xem lý do trong `stg_trips.sql`).
 
@@ -179,3 +203,4 @@ không có hiệu ứng "giá cuối tuần" rõ rệt như 1 số thành phố 
 - [x] Step 4 — Airflow orchestration
 - [x] Step 5 — Đánh bóng portfolio
 - [x] Step 6 — Great Expectations (data quality trên Bronze)
+- [x] Step 7 — Dashboard (Metabase)
