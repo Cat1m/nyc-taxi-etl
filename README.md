@@ -84,19 +84,28 @@ nyc-taxi-etl/
 │   ├── models/marts/       # fact_trips, dim_* (Gold, star schema)
 │   └── seeds/              # vendor/payment lookup tĩnh
 ├── orchestration/           # Airflow qua docker-compose (LocalExecutor)
-│   └── dags/nyc_taxi_pipeline.py
+│   ├── dags/nyc_taxi_pipeline.py
+│   └── resume_stuck_run.py # assist script: xử lý DAG run kẹt giữa chừng
 ├── dashboard/                # Metabase qua docker-compose, độc lập với Airflow
 │   ├── Dockerfile           # base Debian + driver DuckDB cộng đồng
 │   └── docker-compose.yaml
 ├── docs/
 │   ├── data_profiling_2023-01.md   # căn cứ cho luật lọc ở Silver
-│   └── commands.md                 # cheatsheet toàn bộ lệnh hay dùng
+│   ├── commands.md                 # cheatsheet toàn bộ lệnh hay dùng
+│   └── tech_stack_checklist.md     # checklist chọn tech stack (ghi chú học tập)
 ├── project_image/           # screenshot cho README (Airflow, Metabase...)
+├── quickstart.py            # 1 lệnh chạy thử pipeline local, không cần Docker
 ├── requirements.txt
 └── .gitignore
 ```
 
 ## Cách chạy
+
+**Chạy thử nhanh nhất**: sau khi tạo + kích hoạt venv (bước 1 bên dưới),
+chạy `python quickstart.py` — tự tải 1 tháng demo, nạp Bronze, validate GX,
+và build Silver/Gold bằng dbt, in luôn 1 query demo để thấy dữ liệu thật.
+Các bước chi tiết bên dưới dành cho ai muốn hiểu/chạy tay từng phần, hoặc
+cần tới Airflow/Dashboard (bước 3-4, cần Docker, chưa gộp vào script).
 
 ### 1. Ingestion + Bronze (local, không cần Docker)
 

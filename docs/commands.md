@@ -3,6 +3,10 @@
 Tất cả lệnh dưới đây chạy từ **project root** (`nyc-taxi-etl/`), trừ khi ghi chú
 khác. Trên Windows, dùng `venv\Scripts\...` (không phải `venv/bin/...`).
 
+**Lần đầu clone repo / máy mới**: sau khi tạo + kích hoạt venv, chạy
+`python quickstart.py` để tự làm hết phần local (ingest 1 tháng demo + GX +
+dbt Silver/Gold) chỉ bằng 1 lệnh, thay vì gõ tay từng bước bên dưới.
+
 ## Bắt đầu lại phiên làm việc (mở máy lại / hôm sau)
 
 1. Mở Docker Desktop, đợi chạy xong hẳn.
