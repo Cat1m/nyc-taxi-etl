@@ -1,7 +1,7 @@
 {
   "expectations": [
     {
-      "id": "e46189a0-2ae7-4e21-8189-9c99ede8cb06",
+      "id": "de4ba363-cff8-4f8a-9703-e486cb47f17b",
       "kwargs": {
         "column": "fare_amount",
         "max_value": 22.0,
@@ -12,7 +12,7 @@
       "type": "expect_column_mean_to_be_between"
     },
     {
-      "id": "b0c775f6-333c-4f0b-914e-4838a8155f35",
+      "id": "fdd1d6a9-7044-40f4-90e2-14425cb99d4a",
       "kwargs": {
         "column": "fare_amount",
         "max_value": 16.0,
@@ -23,7 +23,7 @@
       "type": "expect_column_median_to_be_between"
     },
     {
-      "id": "55ef01ed-602f-4e28-bc9a-47ff0f909af4",
+      "id": "4947dc67-4c55-45d8-8616-ee1d7b4eec71",
       "kwargs": {
         "column": "trip_distance",
         "quantile_ranges": {
@@ -43,7 +43,7 @@
       "type": "expect_column_quantile_values_to_be_between"
     },
     {
-      "id": "65e325bd-51fe-43ff-9d58-331cdb6e8fc4",
+      "id": "bbdb0198-8298-4d2c-ba62-56b735cd2c85",
       "kwargs": {
         "column": "trip_distance",
         "max_value": 100.0,
@@ -55,7 +55,7 @@
       "type": "expect_column_values_to_be_between"
     },
     {
-      "id": "8394b9cd-1fe6-4ecb-9e76-bffcf6be342b",
+      "id": "04b344df-1197-4ce8-8f3a-a840af5d78dd",
       "kwargs": {
         "column": "fare_amount"
       },
