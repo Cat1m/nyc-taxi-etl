@@ -161,6 +161,30 @@ docker compose exec airflow-scheduler airflow tasks states-for-dag-run nyc_taxi_
 docker compose exec airflow-scheduler airflow dags trigger nyc_taxi_pipeline -e 2023-03-01T00:00:00+00:00
 ```
 
+## Xử lý DAG run bị kẹt (lỡ unpause rồi pause lại giữa chừng)
+
+Tình huống: lỡ unpause DAG cho chạy, phát hiện rồi pause lại ngay, nhưng 1 vài
+task của run đang dở dang chưa kịp chạy xong — task còn lại sẽ đứng mãi ở
+state `scheduled`/`None`/`queued` vì DAG paused thì Airflow không tự xử lý tiếp.
+
+```bash
+# 1. Tìm execution_date của run đang "running"/dở dang
+cd orchestration
+docker compose exec airflow-scheduler airflow dags list-runs -d nyc_taxi_pipeline
+
+# 2. Chạy script assist (tự cd vào orchestration/, chạy từ đâu cũng được)
+python orchestration/resume_stuck_run.py --execution-date 2023-11-01T00:00:00+00:00
+```
+
+Script tự lặp qua từng task theo đúng thứ tự phụ thuộc
+(`download > load_bronze > validate_bronze > dbt_run > dbt_test`), bỏ qua task
+đã `success`, force-run (`airflow tasks run -A`) task còn kẹt, và tự kiểm tra
+Metabase đã tắt chưa trước khi force-run các task có ghi vào
+`warehouse.duckdb`. **Không tự động 100%**: nếu gặp 1 task `failed` thật (khác
+với bị kẹt do pause), script dừng ngay và in đường dẫn log để tự xem xét,
+tránh chạy mù task sau trên dữ liệu có thể sai. Đã verify thành công với 2 run
+kẹt thật (2023-09, 2023-11).
+
 ## Dashboard (Metabase, Step 7)
 
 ```bash
