@@ -19,7 +19,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-import duckdb
+# Không import duckdb ở top-level: trên máy vừa clone repo, chưa có
+# requirements.txt nào được cài -- import thẳng sẽ crash trước khi kịp chạy
+# bước "pip install" bên dưới. Import trễ (bên trong show_demo_query) sau khi
+# bước cài dependency đã chạy xong.
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -50,6 +53,8 @@ def show_demo_query() -> None:
     """In nhanh 1 query demo (top zone đông khách) để thấy ngay dữ liệu thật,
     không chỉ dòng "thành công" khô khan -- lấy đúng câu hỏi đã có trong README.
     """
+    import duckdb
+
     print("\n=== Demo: top 3 zone đón khách đông nhất ===")
     con = duckdb.connect(str(WAREHOUSE_PATH), read_only=True)
     try:
