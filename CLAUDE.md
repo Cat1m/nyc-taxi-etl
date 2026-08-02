@@ -9,13 +9,17 @@ portfolio piece. Medallion architecture (Bronze → Silver → Gold):
 
 - **DuckDB** as both the compute engine and the local warehouse (`warehouse.duckdb`
   at repo root)
+- **Great Expectations (GX)** validates Bronze (distribution/boundary checks,
+  not just binary constraints) before Silver runs
 - **dbt (dbt-duckdb)** for transforms/modeling/testing (Silver + Gold layers)
 - **Airflow (LocalExecutor)**, run via docker-compose, for orchestration
-  (download → load_bronze → dbt_run → dbt_test)
+  (download → load_bronze → validate_bronze (GX) → dbt_run → dbt_test)
+- **Metabase**, run via docker-compose (separate from Airflow), for the
+  dashboard — reads the Gold layer read-only
 
-No Spark/BigQuery/dashboard yet — see README.md "Future work" for planned
-extensions and their intended order (Great Expectations → dashboard → cleanup →
-PySpark/BigQuery last, since the latter two are bigger architectural changes).
+No Spark/BigQuery yet — see README.md "Future work" for what's left: a
+dashboard chart tracking GX results over time, cleaning up the `payment_type =
+0` handling, then PySpark/BigQuery last (bigger architectural changes).
 
 README.md is in Vietnamese and is the source of truth for project goals, demo
 queries, and status; keep it in sync with major milestones if asked to update
@@ -24,9 +28,11 @@ built.
 
 ## Current state
 
-All 5 original steps (scaffold, ingestion, bronze load, dbt Silver/Gold,
-Airflow orchestration, portfolio polish) are implemented. `warehouse.duckdb`
-locally has 4 months backfilled (2023-01 through 2023-04).
+All 8 steps (scaffold, ingestion, bronze load, dbt Silver/Gold, Airflow
+orchestration, portfolio polish, Great Expectations on Bronze, Metabase
+dashboard) are implemented — see README.md "Trạng thái hiện tại" for the
+checklist. `warehouse.duckdb` locally has 4 months backfilled (2023-01 through
+2023-04).
 
 ## Commands
 
@@ -71,6 +77,8 @@ NYC TLC (Parquet files)
         │  ingestion/download_tlc.py
         ▼
    Bronze layer        bronze_yellow_trips, bronze_taxi_zone_lookup — raw, untouched
+        │  quality/validate_bronze.py (Great Expectations, read-only)
+        │  distribution/boundary checks — blocks the pipeline on failure
         │  dbt staging (stg_trips)
         ▼
    Silver layer        typed, renamed columns, junk rows filtered (see comment
@@ -81,6 +89,9 @@ NYC TLC (Parquet files)
         ▼
    Gold layer           star schema: fact_trips + dim_datetime, dim_location,
                         dim_vendor, dim_payment
+        │  read-only
+        ▼
+   Metabase dashboard   docker-compose, independent of Airflow; 5 charts today
 ```
 
 Each layer is a separate DuckDB table/model — nothing is overwritten in place,
@@ -134,3 +145,15 @@ two concurrent DAG runs would both try to write `warehouse.duckdb`.
 - `docs/data_profiling_2023-01.md` is the evidentiary basis for every filter
   rule in `stg_trips.sql`. If you change a filter threshold, verify against
   this doc (or re-profile) rather than guessing a new threshold.
+- **GX data context split**: `quality/gx/expectations/` and
+  `quality/gx/checkpoints/` are source, committed; `quality/gx/uncommitted/`
+  (including Data Docs HTML) is generated output, gitignored. Each run is
+  tagged with `run_name = year_month`, so Data Docs accumulate history across
+  months instead of being overwritten — don't change this to Ephemeral context.
+- `quality/validate_bronze.py` reads Bronze via a **read-only** DuckDB
+  connection and exits non-zero on any expectation failure, so Airflow's
+  BashOperator blocks `dbt_run` the same way `dbt_test` already blocks the
+  pipeline downstream — preserve this exit-code contract if you touch it.
+- `dashboard/` (Metabase via docker-compose) is intentionally decoupled from
+  `orchestration/`'s docker-compose — it only reads the Gold layer, never
+  writes `warehouse.duckdb`.
