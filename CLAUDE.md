@@ -23,8 +23,7 @@ dashboard chart tracking GX results over time, cleaning up the `payment_type =
 
 README.md is in Vietnamese and is the source of truth for project goals, demo
 queries, and status; keep it in sync with major milestones if asked to update
-progress. `.claude/plan/next-steps.md` tracks what's been discussed but not yet
-built.
+progress.
 
 ## Current state
 
@@ -41,6 +40,10 @@ checklist. `warehouse.duckdb` locally has 4 months backfilled (2023-01 through
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+
+# one-command local run (ingest -> GX validate -> dbt run/test for one month;
+# skips Docker-only steps (Airflow, Metabase) and prints what to do next)
+python quickstart.py [--year-month 2023-01]
 
 # ingestion: download a month + profile it, then load into bronze (idempotent)
 python ingestion/download_tlc.py --year-month 2023-01
