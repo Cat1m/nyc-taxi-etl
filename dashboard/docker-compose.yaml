@@ -9,6 +9,14 @@ services:
       dockerfile: dashboard/Dockerfile
     ports:
       - "3000:3000"
+    # Metabase (Quartz scheduler) tự resolve hostname của chính nó lúc khởi động - nếu chỉ dùng
+    # hostname ngẫu nhiên = container ID thì phụ thuộc DNS nội bộ Docker (127.0.0.11) trả lời kịp,
+    # DNS này có lúc chưa sẵn sàng ngay sau khi Docker Desktop mới mở (đặc biệt trên Windows/WSL2)
+    # -> "UnknownHostException", Metabase Initialization FAILED. Đặt hostname cố định + map thẳng
+    # vào /etc/hosts của container để việc này không cần hỏi DNS nữa.
+    hostname: metabase
+    extra_hosts:
+      - "metabase:127.0.0.1"
     # Docker tạo named volume mới với chủ sở hữu root, nhưng image chạy user
     # non-root "metabase" (xem Dockerfile) -- không ghi được vào
     # metabase-data. Ép chạy root ở service này (chỉ ảnh hưởng container này,
@@ -23,7 +31,10 @@ services:
       # Khi khai báo Database trong Metabase UI, bật thêm tùy chọn read_only
       # của driver (2 lớp phòng hờ).
       - ../warehouse.duckdb:/home/metabase/data/warehouse.duckdb:ro
-    restart: always
+    # unless-stopped (không phải always): tôn trọng lúc bấm Stop tay trong Docker Desktop -
+    # container ở trạng thái đã dừng thì mở Docker Desktop lần sau vẫn để yên, không tự bật lại.
+    # "always" sẽ bật lại container bất kể có bị dừng tay trước đó hay không.
+    restart: unless-stopped
 
 volumes:
   metabase-data:
